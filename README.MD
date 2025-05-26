@@ -88,8 +88,16 @@ Precon_all is built on freesurfer. To edit a surface simply edit the `wm.nii.gz`
  - precon_4 will downsample the output of a previous precon_all run. `-v` flag is mandatory.
  - precon_art meant for art projects or figures in which the non_cort mask is included. Only run after precon_all has been succesffuly run. Precon art is not meant to give any statistics or information on the surface and is afor visualization purposes only
 
- # Setting up the precon_all docker container
+# Installation
+Precon_all requires that you have Freesurfer 6 or above, FSL version 6 or above, ANTS version 2.3.5 or above, and Connectome Workbench version 1.5.0 or above. 
+All packages must be installed in your local bash profile as specified by each packages instructions. 
+Once installed, simply clone this repository and point the $PCP_PATH to the precon_all directory you've cloned. 
+
+ # Precon_all as a docker container
  Precon_all can be run through a docker container as well as on linux subsystem in windows.
  To set this up, first edit line 317 of the `precon_alldockerfile` to point to your local path to your freesurfer license.
  Then simply run the `precon_all_docker.sh` script.
 
+# Runtime
+Precon_all runs on most species within 2-5 hours. However if using a highly gyrified or very large brain it can take longer. 
+Because it does not run parcellation steps and only segments by gray, white, and csf, you should kill the process if it goes over 18 hours. 

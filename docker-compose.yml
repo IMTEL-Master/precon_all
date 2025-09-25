@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: precon_all_dockerfile
-      platform: linux/arm64  # Change to linux/arm64 for Apple Silicon
     volumes:
       - ./data:/data
       - ./license.txt:/opt/freesurfer/license.txt

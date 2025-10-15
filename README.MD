@@ -59,7 +59,7 @@ Direct installation on your system provides the best performance and flexibility
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/neurabenn/precon_all.git
+   git clone https://github.com/IMTEL-Master/precon_all.git
    cd precon_all
    ```
 
@@ -98,7 +98,7 @@ Docker provides a containerized environment with all dependencies pre-installed.
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/neurabenn/precon_all.git
+   git clone https://github.com/IMTEL-Master/precon_all.git
    cd precon_all
    ```
 
@@ -188,6 +188,29 @@ Place in `seg_priors/` folder:
 - `wm.nii.gz`: Probability map for white matter
 
 **Note**: Priors improve segmentation accuracy but are not required.
+
+### Creating Brain Masks
+
+#### Using ITK-SNAP:
+1. Open your T1 image in ITK-SNAP
+2. Activate the paintbrush tool: Tools → Active Main Tool → Paint Brush Tool
+3. For each required mask:
+   - Create a new label or use existing labels
+   - Navigate through slices and manually paint the appropriate brain regions
+   - Use different labels for different mask types (e.g., label 1 for left hemisphere, label 2 for right)
+4. Save each mask separately: File → Save Data → Segmentation Data
+5. Ensure saved files are named correctly (e.g., brain_mask.nii.gz)
+
+#### Alternative Methods:
+- Extract masks from existing parcellations (e.g., FreeSurfer, FSL FAST)
+- Use automated segmentation tools specific to your species
+- Adapt atlases from similar species if available
+
+#### Quality Check: Before proceeding, verify that:
+- All masks are binary (only 0s and 1s)
+- Masks have the same dimensions and orientation as your T1 image
+- Left and right hemisphere masks don't overlap
+- The brain mask fully encompasses all other masks
 
 ## Quick Start
 

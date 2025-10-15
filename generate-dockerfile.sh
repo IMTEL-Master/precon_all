@@ -61,7 +61,7 @@ if [ ! -f "./license.txt" ]; then
 fi
 
 # Generate unified Dockerfile
-cat > ./scripts/precon_all_dockerfile << EOF
+cat > ./precon_all_dockerfile << EOF
 FROM ubuntu:22.04
 
 # Build arguments
@@ -87,7 +87,7 @@ EOF
 
 # Add build-specific sections
 if [[ "$BUILD_TYPE" == "cached" ]]; then
-    cat >> ./scripts/precon_all_dockerfile << 'EOF'
+    cat >> ./precon_all_dockerfile << 'EOF'
 # === CACHED BUILD SECTION ===
 # Copy pre-downloaded files from host cache
 COPY cache/freesurfer.tar.gz /tmp/
@@ -127,7 +127,7 @@ RUN echo "Installing ANTs from cache..." && \
 
 EOF
 else
-    cat >> ./scripts/precon_all_dockerfile << 'EOF'
+    cat >> ./precon_all_dockerfile << 'EOF'
 # === DIRECT BUILD SECTION ===
 # Set working directory for downloads
 WORKDIR /tmp
@@ -171,7 +171,7 @@ EOF
 fi
 
 # Add common post-installation section
-cat >> ./scripts/precon_all_dockerfile << 'EOF'
+cat >> ./precon_all_dockerfile << 'EOF'
 # === COMMON POST-INSTALLATION ===
 
 # Set conda PATH
@@ -272,4 +272,4 @@ if [[ "$BUILD_TYPE" == "cached" ]]; then
     ls -lh ./cache/ 2>/dev/null || echo "Cache directory empty"
 fi
 
-print_message $YELLOW "To build: cd scripts && docker-compose up --build"
+print_message $YELLOW "To build: docker build -t precon_all -f precon_all_dockerfile ."

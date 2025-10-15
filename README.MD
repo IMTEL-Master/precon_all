@@ -5,7 +5,7 @@ precon_all is a neuroimaging pipeline designed for cortical surface reconstructi
 ## Table of Contents
 - [Overview](#overview)
 - [System Requirements](#system-requirements)
-- [Installation Methods](#installation-methods)
+- [Setup Methods](#setup-methods)
 - [Quick Start](#quick-start)
 - [Data Requirements](#data-requirements)
 - [Usage Guide](#usage-guide)
@@ -30,35 +30,30 @@ precon_all processes T1-weighted MRI images to generate cortical surfaces for an
 - **Storage**: 50GB free space for Docker images and processing
 - **CPU**: Multi-core processor (4+ cores recommended)
 
-### Software Dependencies (Native Installation)
+### Software Dependencies (Bare-Metal Installation)
 - FreeSurfer 6.0+ 
-- FSL 6.0+
-- ANTs 2.3.5+
+- FSL 5.0.11+
+- ANTs 2.3.1+
 - Connectome Workbench 1.5.0+
 
 ### Docker Requirements
 - Docker Engine 20.10+
-- Docker Compose 2.0+ (recommended)
 - 50GB+ available disk space
 
-## Installation Methods
+## Setup Methods
 
-### Method 1: Docker (Recommended)
+The setup process has been streamlined with two new scripts:
+- `predownload-dependencies.sh`: Automatically handles software dependencies
+- `generate-dockerfile.sh`: Creates optimized Docker containers
 
-Docker installation provides a containerized environment with all dependencies pre-installed.
+### Method 1: Bare-Metal Installation (Recommended)
+
+Direct installation on your system provides the best performance and flexibility.
 
 #### Prerequisites
 1. **FreeSurfer License**: Required for operation
    - Obtain free license at: https://surfer.nmr.mgh.harvard.edu/registration.html
-   - Save as `license.txt`
-
-2. **Python Environment**:
-   ```bash
-   python3 -m venv precon_env
-   source precon_env/bin/activate  # Linux/Mac
-   # precon_env\Scripts\activate  # Windows
-   pip install neurodocker
-   ```
+   - Save as `license.txt` in the repository root
 
 #### Setup Steps
 
@@ -68,69 +63,78 @@ Docker installation provides a containerized environment with all dependencies p
    cd precon_all
    ```
 
-2. **Prepare Data Directory**:
+2. **Download and Install Dependencies**:
    ```bash
-   mkdir -p data
-   # Place your T1 images and masks in data/
+   chmod +x predownload-dependencies.sh
+   ./predownload-dependencies.sh
    ```
+   
+   The `predownload-dependencies.sh` script will:
+   - Check for existing installations of required software
+   - Download and install missing dependencies automatically
+   - Set up proper environment variables
+   - Verify installations work correctly
+   
+   Choose option 2 (bare-metal) when prompted. The script supports automatic installation on Linux and provides guidance for other platforms.
+
+3. **Set Environment Variables**:
+   Add the suggested export commands to your `~/.bashrc` and restart your terminal, or source the file:
+   ```bash
+   source ~/.bashrc
+   ```
+
+4. **Verify Installation**:
+   ```bash
+   export PCP_PATH=/path/to/precon_all
+   export PATH=$PCP_PATH/bin:$PATH
+   which surfing_safari.sh
+   ```
+
+### Method 2: Docker Installation
+
+Docker provides a containerized environment with all dependencies pre-installed.
+
+#### Setup Steps
+
+1. **Clone Repository**:
+   ```bash
+   git clone https://github.com/neurabenn/precon_all.git
+   cd precon_all
+   ```
+
+2. **Download Dependencies** (Optional - for faster builds):
+   ```bash
+   chmod +x predownload-dependencies.sh
+   ./predownload-dependencies.sh
+   ```
+   Choose option 1 (Docker) to pre-download all dependencies to a local cache.
 
 3. **Generate Dockerfile**:
    ```bash
-   chmod +x precon_all_docker.sh
-   ./precon_all_docker.sh
+   chmod +x generate-dockerfile.sh
+   ./generate-dockerfile.sh cached  # Use cached build if you ran step 2
+   # OR
+   ./generate-dockerfile.sh direct  # Direct download during build
    ```
-
-4. **Build Docker Image** (⚠️ This takes 30-60 minutes):
-   ```bash
-   # For Intel/AMD processors
-   sudo docker build --platform linux/amd64 -t precon_all -f precon_all_dockerfile .
    
-   # For Apple Silicon Macs
-   sudo docker build --platform linux/arm64 -t precon_all -f precon_all_dockerfile .
+   The `generate-dockerfile.sh` script replaces the old compose method and:
+   - Creates an optimized Dockerfile for your build type
+   - Handles both cached (faster) and direct (simpler) builds
+   - Automatically configures all software dependencies
+   - Sets up proper environment variables
+
+4. **Build Docker Image**:
+   ```bash
+   docker build -t precon_all -f precon_all_dockerfile .
    ```
 
 5. **Run Container**:
    ```bash
-   sudo docker run -it \
+   docker run -it \
      -v $(pwd)/data:/data \
      -v $(pwd)/license.txt:/opt/freesurfer/license.txt \
      precon_all bash
    ```
-
-#### Docker Compose Method (Automated)
-
-Create `docker-compose.yml`:
-```yaml
-version: '3.8'
-services:
-  precon_all:
-    build:
-      context: .
-      dockerfile: precon_all_dockerfile
-      platform: linux/amd64  # Change to linux/arm64 for Apple Silicon
-    volumes:
-      - ./data:/data
-      - ./license.txt:/opt/freesurfer/license.txt
-      - ./output:/output
-    working_dir: /data
-    stdin_open: true
-    tty: true
-    environment:
-      - SUBJECTS_DIR=/output
-```
-
-Run with:
-```bash
-docker-compose up --build
-docker-compose exec precon_all bash
-```
-
-### Method 2: Native Installation
-
-1. Install dependencies following each package's documentation
-2. Clone repository: `git clone https://github.com/neurabenn/precon_all.git`
-3. Set environment variable: `export PCP_PATH=/path/to/precon_all`
-4. Add to PATH: `export PATH=$PCP_PATH/bin:$PATH`
 
 ## Data Requirements
 
@@ -330,6 +334,60 @@ surfing_safari.sh -i novel_species.nii.gz -r precon_all -a masks
 surfing_safari.sh -i inverted_t2.nii.gz -r precon_all -a masks
 ```
 
+## Dependency Management
+
+### predownload-dependencies.sh
+
+This script streamlines the setup process by automatically handling software dependencies:
+
+**Features:**
+- **Automatic Detection**: Checks for existing installations and versions
+- **Smart Installation**: Only downloads/installs missing or incorrect versions
+- **Dual Mode Support**: 
+  - Bare-metal: Direct system installation
+  - Docker: Pre-downloads to cache for faster container builds
+- **Cross-Platform**: Supports Linux, macOS, and Windows (with guidance)
+- **Interactive Verification**: Prompts user confirmation when automatic detection fails
+
+**Usage:**
+```bash
+./predownload-dependencies.sh
+# Follow prompts to select installation mode
+```
+
+The script handles:
+- FreeSurfer 6.0.0
+- FSL 5.0.11  
+- ANTs 2.3.1
+- Connectome Workbench 1.5.0
+- Miniconda (for Python dependencies)
+
+### generate-dockerfile.sh
+
+This script replaces the old docker-compose workflow with a more flexible approach:
+
+**Features:**
+- **Cached Builds**: Use pre-downloaded dependencies for faster builds
+- **Direct Builds**: Download during build process (simpler but slower)
+- **Unified Dockerfile**: Single file handles both build types
+- **Automatic Optimization**: Configures paths and permissions correctly
+- **License Integration**: Automatically includes FreeSurfer license
+
+**Usage:**
+```bash
+# For cached build (faster, requires predownload-dependencies.sh first)
+./generate-dockerfile.sh cached
+
+# For direct build (simpler, downloads during build)
+./generate-dockerfile.sh direct
+```
+
+**Build Process:**
+1. Generates optimized Dockerfile as `precon_all_dockerfile`
+2. Sets up all required software with proper paths
+3. Creates non-root user for security
+4. Configures environment variables automatically
+
 ## Pipeline Modules
 
 ### precon_all (Complete Pipeline)
@@ -448,15 +506,27 @@ subject_directory/
 
 **Docker issues**:
 - Ensure sufficient disk space (50GB+)
-- Verify FreeSurfer license path
-- Check platform specification in build command
+- Verify FreeSurfer license path at repository root
+- Use `generate-dockerfile.sh` instead of manual Dockerfile creation
+- For build failures, try `direct` mode instead of `cached`
+
+**Dependency issues**:
+- Run `predownload-dependencies.sh` to verify all software is properly installed
+- Check that environment variables are set correctly in your shell
+- Ensure FreeSurfer license is valid and in the correct location
+
+**Migration from older versions**:
+- Remove any old `precon_all_dockerfile` - use `generate-dockerfile.sh` instead
+- The new scripts replace docker-compose workflows
+- Bare-metal installation is now the recommended primary method
 
 ### Performance Tips
 
+- **Bare-metal installation** provides better performance than Docker
 - Use SSD storage for faster I/O
-- Allocate maximum available RAM to Docker
-- Process hemispheres separately for very large brains
-- Use tissue priors when available
+- Process hemispheres separately for very large brains (`-L` or `-R` flags)
+- Use tissue priors when available for better segmentation
+- Pre-download dependencies with `predownload-dependencies.sh` for faster Docker builds
 
 ## Support
 

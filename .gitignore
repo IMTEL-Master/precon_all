@@ -4,3 +4,4 @@ license.txt
 data
 cache
 
+*.DS_Store

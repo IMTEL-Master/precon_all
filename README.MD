@@ -26,7 +26,7 @@ precon_all processes T1-weighted MRI images to generate cortical surfaces for an
 ## System Requirements
 
 ### Minimum Hardware
-- **RAM**: 16GB minimum, 32GB recommended
+- **RAM**: 8GB minimum, 16+GB recommended
 - **Storage**: 50GB free space for Docker images and processing
 - **CPU**: Multi-core processor (4+ cores recommended)
 
@@ -53,7 +53,9 @@ Direct installation on your system provides the best performance and flexibility
 #### Prerequisites
 1. **FreeSurfer License**: Required for operation
    - Obtain free license at: https://surfer.nmr.mgh.harvard.edu/registration.html
-   - Save as `license.txt` in the repository root
+   - Save as `license.txt` in the 
+      - Bare-metal: your `FREESURFER_HOME` directory (downloaded later)
+      - Docker: project root
 
 #### Setup Steps
 
@@ -69,23 +71,40 @@ Direct installation on your system provides the best performance and flexibility
    ./predownload-dependencies.sh
    ```
    
-   The `predownload-dependencies.sh` script will:
-   - Check for existing installations of required software
-   - Download and install missing dependencies automatically
-   - Set up proper environment variables
-   - Verify installations work correctly
+   The `predownload-dependencies.sh` script:
+   - Checks for existing software
+   - Downloads and installs missing dependencies
+   - Sets up environment variables
+   - Verifies installations
+
+   Platform Notes:
+   - Linux: Fully automated installation
+   - macOS: Guided installation using brew or manual paths
+   - Windows: Run inside WSL 2 (Ubuntu) for compatibility; native install not supported
    
    Choose option 2 (bare-metal) when prompted. The script supports automatic installation on Linux and provides guidance for other platforms.
 
 3. **Set Environment Variables**:
-   Add the suggested export commands to your `~/.bashrc` and restart your terminal, or source the file:
+   Add these exports to your shell configuration:
+   - Linux/macOS → add to ~/.bashrc or ~/.zshrc
+   - Windows (WSL) → add to ~/.bashrc   
+   ```
+   # These are general paths, make sure they point to the correct location
+   export PCP_PATH=~/precon_all
+   export FREESURFER_HOME=~/freesurfer-6.0.0
+   export ANTSPATH=~/ants-2.4.3/bin
+   export FSLDIR=~/fsl
+   export WORKBENCH=~/workbench-1.5.0/workbench/bin
+   export PATH=$PCP_PATH/bin:$FREESURFER_HOME:$ANTSPATH:$FSLDIR/bin:$WORKBENCH:$PATH
+   ```
+   Apply changes:
    ```bash
    source ~/.bashrc
    ```
 
 4. **Verify Installation**:
    ```bash
-   export PCP_PATH=/path/to/precon_all
+   export PCP_PATH=~/precon_all
    export PATH=$PCP_PATH/bin:$PATH
    which surfing_safari.sh
    ```
@@ -135,6 +154,7 @@ Docker provides a containerized environment with all dependencies pre-installed.
      -v $(pwd)/license.txt:/opt/freesurfer/license.txt \
      precon_all bash
    ```
+   Windows users: Replace $(pwd) with %cd% in PowerShell or CMD.
 
 ## Data Requirements
 
